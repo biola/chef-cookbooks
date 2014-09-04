@@ -1,0 +1,40 @@
+server {
+  listen 80;
+  listen 443 ssl;
+  server_name <%= @server_name %>;
+  <% if @include -%>
+  <% @include.each do |conf| -%>
+  include /etc/nginx/conf.d/<%= conf %>;
+  <% end -%>
+  <% end -%>
+
+  location / {
+    root <%= node['shared_hosting']['nginx']['sites_dir'] %>/nginx-default;
+    index index.html;
+  }
+
+  <% if @shared_sites -%>
+  <% @shared_sites.each do |s| -%>
+  <% s.each do |site_key, site_value| -%>
+  location <%= site_value['subdirectory'] %> {
+    access_log /var/log/nginx/<%= site_key.to_s %>.access.log;
+    alias <%= node['shared_hosting']['nginx']['sites_dir'] %>/<%= site_key.to_s %>/public_html;
+    index index.html index.htm index.php;
+    try_files $uri $uri/ /index.php?$args;
+
+    location ~ \.php$ {
+      include /etc/nginx/fastcgi_params;
+      #try_files $uri =404;
+      fastcgi_param SCRIPT_FILENAME $request_filename;
+      fastcgi_pass unix:<%= node['shared_hosting']['php']['socket_dir'] %>/<%= site_key.to_s %>.sock;
+    }
+
+    # Rewrites for WordPress SEO XML Sitemap
+    rewrite ^<%= site_value['subdirectory'] %>/sitemap_index.xml$ <%= site_value['subdirectory'] %>/index.php?sitemap=1 last;
+    rewrite ^<%= site_value['subdirectory'] %>/([^/]+?)-sitemap([0-9]+)?.xml$ <%= site_value['subdirectory'] %>/index.php?sitemap=$1&sitemap_n=$2 last;
+  }
+
+  <% end -%>
+  <% end -%>
+  <% end -%>
+}
