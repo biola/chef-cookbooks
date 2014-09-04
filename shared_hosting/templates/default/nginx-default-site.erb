@@ -1,6 +1,6 @@
 server {
-  listen 80;
-  listen 443 ssl;
+  listen 80 default_server;
+  listen 443 ssl default_server;
   server_name <%= @server_name %>;
   access_log /var/log/nginx/<%= @site_name %>.access.log;
   root <%= @site_root %><%= @document_root %>;
