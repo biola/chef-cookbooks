@@ -27,6 +27,13 @@ else
 	nagios_user = Chef::EncryptedDataBagItem.load(node['mysql']['management']['users_databag'], node['mysql']['management']['nagios_user'], encryption_key)
 
 	# Create the configuration file for Nagios
+  directory "/etc/nagios" do
+    owner "nagios"
+    group "nagios"
+    mode "0755"
+    action :create
+  end  
+
   template node['mysql']['management']['nagios_conf_file'] do
     source "nagios.cnf.erb"
     mode 0600
