@@ -40,7 +40,7 @@ Get-VM | Sort Name | ForEach {
     if (!($IgnoreBackupState.Value -eq 'True')) {
       if ($VMBackupState.Value) {
         # Check timestamp
-        $LastBackedUp = $VMBackupState.Value -Replace '^.*(\d{1,2}\/\d{1,2}\/\d{4}.\d{1,2}:\d{2}:\d{2}.[AP]M).*$', '$1'
+        $LastBackedUp = $VMBackupState.Value -Replace '^.*\[(\d{1,2}\/\d{1,2}\/\d{4}.\d{1,2}:\d{2}:\d{2}.[AP]M).*$', '$1'
         # If the timestamp is outside of the time range, add it to the list of VMs with outdated backups
         if ([datetime]$LastBackedUp -lt $BackupRangeDate) {
           $OutdatedBackups += , @($_, $LastBackedUp)
