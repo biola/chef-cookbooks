@@ -6,7 +6,7 @@
 # -vCenterServer          The FQDN of the vCenter Server to connect to
 # -vCenterUser            The username for connecting to vCenter Server
 # -vCenterPassword        The password for connecting to vCenter Server
-# -BackupRange            The range in days that a VM should be backed up in
+# -BackupRange            The range in hours that a VM should be backed up in
 # -BackupStateAttribute   The custom attribute to check for the VM's backup state
 # -IgnoreStateAttribute   The custom attribute to determine if a VM's backup state should be ignored
 # -ExcludedFolders        The backup state of VMs in the folders specified will not be checked
@@ -16,7 +16,7 @@ Param (
   [string]$vCenterServer,
   [string]$vCenterUser,
   [string]$vCenterPassword,
-  [int]$BackupRange = 1,
+  [int]$BackupRange = 24,
   [string]$BackupStateAttribute = "VeeamBackupState",
   [string]$IgnoreStateAttribute = "IgnoreBackupState",
   [array]$ExcludedFolders
@@ -27,7 +27,7 @@ Add-PSSnapin VMware.VimAutomation.Core
 Connect-VIServer -Server $vCenterServer -Username $vCenterUser -Password $vCenterPassword | Out-Null
 
 $OutdatedBackups = @()
-$BackupRangeDate = (Get-Date).AddDays(-$BackupRange)
+$BackupRangeDate = (Get-Date).AddHours(-$BackupRange)
 
 # Look at the backup state for all VMs
 Get-VM | Sort Name | ForEach {
