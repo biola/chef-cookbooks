@@ -166,7 +166,7 @@ cb.manifest['files'].each do |cbfile|
   if cbfile['path'] =~ /icons/
     filename = cbfile['name'].sub(/^icons\//,'')
     cookbook_file "#{node['opsview']['icons_dir']}/#{filename}" do
-      source cbfile['name']
+      source "icons/#{cbfile['name']}"
       notifies :run, "execute[create host icon for #{filename}]", :immediately
     end
 
