@@ -37,6 +37,12 @@ default['splunk']['windows_ta']['system_log'] = {
   "index" => "winevents"
 }
 
+# Windows Update Log
+default['splunk']['windows_ta']['windowsupdate_log'] = {
+  "disabled" => "1",
+  "index" => "windows"
+}
+
 # Performance Counters
 default['splunk']['windows_ta']['perfmon_cpu'] = {
   "disabled" => "1",

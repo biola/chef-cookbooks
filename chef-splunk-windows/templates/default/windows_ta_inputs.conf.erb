@@ -25,6 +25,12 @@ current_only = 0
 checkpointInterval = <%= node['splunk']['windows_ta']['system_log']['checkpointInterval'] %>
 index = <%= node['splunk']['windows_ta']['system_log']['index'] %>
 
+###### Windows Update Log ######
+[monitor://$WINDIR\WindowsUpdate.log]
+disabled = <%= node['splunk']['windows_ta']['windowsupdate_log']['disabled'] %>
+sourcetype = WindowsUpdateLog
+index = <%= node['splunk']['windows_ta']['windowsupdate_log']['index'] %>
+
 ###### Performance Counters ######
 [perfmon://CPUTime]
 disabled = <%= node['splunk']['windows_ta']['perfmon_cpu']['disabled'] %>
