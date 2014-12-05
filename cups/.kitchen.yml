@@ -1,0 +1,53 @@
+---
+driver:
+  name: vagrant
+
+provisioner:
+  name: chef_zero
+
+platforms:
+  - name: ubuntu-14.04
+    run_list:
+      - recipe[apt]
+  - name: ubuntu-12.04
+    run_list:
+      - recipe[apt]
+  - name: centos-6.5
+  - name: centos-5.10
+
+suites:
+  - name: default
+    run_list:
+      - recipe[cups::default]
+      - recipe[cups::default_printer]
+    attributes:
+      dev_mode: true
+      cups:
+        default_printer: vagrantprinter1
+        printers:
+        - vagrantprinter1:
+            uri: lpd://192.168.10.5
+            desc: HP LaserJet 50000
+            location: Front Office
+        - vagrantprinter2:
+            uri: lpd://192.168.10.6
+            desc: HP LaserJet 60000
+            location: Back Office
+  - name: airprint
+    run_list:
+      - recipe[cups::default]
+      - recipe[cups::default_printer]
+      - recipe[cups::airprint]
+    attributes:
+      dev_mode: true
+      cups:
+        default_printer: vagrantprinter1
+        printers:
+        - vagrantprinter1:
+            uri: lpd://192.168.10.5
+            desc: HP LaserJet 50000
+            location: Front Office
+        - vagrantprinter2:
+            uri: lpd://192.168.10.6
+            desc: HP LaserJet 60000
+            location: Back Office

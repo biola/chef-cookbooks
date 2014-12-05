@@ -1,0 +1,1 @@
+../../default/serverspec/cups_spec.rb

@@ -14,12 +14,24 @@ LogLevel info
 SystemGroup <%= node['cups']['systemgroups'] %>
 
 
+<% if node['cups']['share_printers'] -%>
+# Allow remote access
+Port 631
+<% else -%>
 # Only listen for connections from the local machine.
 Listen localhost:631
+<% end -%>
 Listen /var/run/cups/cups.sock
 
+<% if node['cups']['share_printers'] -%>
 # Show shared printers on the local network.
 Browsing On
+BrowseLocalProtocols dnssd CUPS
+BrowseRemoteProtocols dnssd CUPS
+<% else -%>
+# Disable printer sharing.
+Browsing Off
+<% end -%>
 BrowseOrder allow,deny
 # (Change '@LOCAL' to 'ALL' if using directed broadcasts from another subnet.)
 BrowseAllow @LOCAL
@@ -30,6 +42,10 @@ DefaultAuthType Basic
 # Restrict access to the server...
 <Location />
   Order allow,deny
+<% if node['cups']['share_printers'] -%>
+  # Allow shared printing...
+  Allow @LOCAL
+<% end -%>
 </Location>
 
 # Restrict access to the admin pages...
