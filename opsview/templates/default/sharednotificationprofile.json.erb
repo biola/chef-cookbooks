@@ -7,7 +7,7 @@
       "all_servicegroups" : "0",
       "name" : "<%= np['name'] %>",
       "fullname" : "<%= np['fullname'] %>",
-      "host_notification_options" : "d,r",
+      "host_notification_options" : "<%= np['host_notification_options'] || 'd,r' %>",
 <% if np['keywords'] -%>
       "keywords" : [
 <% np['keywords'].each do |k| -%>
@@ -19,7 +19,7 @@
 <% end -%>
       "notification_level" : "1",
       "notification_period" : {
-        "name" : "24x7"
+        "name" : "<%= np['notification_period'] || '24x7' %>"
       },
       "notificationmethods" : [
 <% np['notificationmethods'].each do |nm| -%>
@@ -31,7 +31,7 @@
       "role" : {
         "name" : "<%= np['role'] || 'View some, change none' %>"
       },
-      "service_notification_options" : "w,u,c,r"
+      "service_notification_options" : "<%= np['service_notification_options'] || 'w,u,c,r' %>"
     }<% unless np == @values.last -%>,<% end -%>
 <% end -%>
   ]
