@@ -1,3 +1,9 @@
+## Deprecation Warning
+
+This repository has been deprecated in favor of individual cookbook repositories at the [top level Biola github org.](https://github.com/biola) 
+
+### Git submodules
+
 **NOTE:** This repository of cookbooks makes heavy use of git
 submodules, and their upstream URLs may change unexpectedly (e.g., when
 they are forked). It is advised to perform a `git submodule sync` after
