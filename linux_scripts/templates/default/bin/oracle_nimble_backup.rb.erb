@@ -102,7 +102,7 @@ def runningdbs(dbhostname,dbuser,dbkey)
   log("Found autostarted databases #{databases.to_s}; checking each to see if they are running")
   databases.each do |database|
     dbprocess = openssh(dbhostname,dbuser,dbkey,"ps -efa | grep ora_lgwr_#{database} | grep -v 'grep ' | awk '{print $NF}'")
-    unless dbprocess.chomp == "ora_lgwr_#{database}"
+    if dbprocess == nil or dbprocess.chomp != "ora_lgwr_#{database}"
       log("Database #{database} does not appear to be running; ignoring its log check")
       databases.delete(database)
     end
