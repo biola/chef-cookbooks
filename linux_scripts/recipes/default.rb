@@ -21,8 +21,11 @@ cookbookObj = run_context.cookbook_collection[cookbook_name]
 
 # Iterate through templates
 cookbookObj.manifest['templates'].each do |cookbookTemplate|
-
-  templateName = cookbookTemplate['name']
+  if cookbookTemplate['name'].include?('hotplug_memory')
+    templateName = "sbin/#{cookbookTemplate['name']}"
+  else
+    templateName = "bin/#{cookbookTemplate['name']}"
+  end
 
   template "/usr/local/#{templateName.sub(/.erb$/,'')}" do
     source templateName
