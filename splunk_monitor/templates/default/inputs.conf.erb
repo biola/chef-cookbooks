@@ -13,3 +13,19 @@ disabled = false
 
 <% end -%>
 <% end -%>
+
+<% @splunk_scripts.each_with_index do |parameters, index| -%>
+# Begin new script stanza
+#
+<% parameters.each_key do |script_name| -%>
+[script://<%= parameters[script_name]['location'] %>]
+disabled = false
+<%= "host = " + parameters[script_name]['host'] if parameters[script_name]['host'] %>
+<%= "index = " + parameters[script_name]['index'] if parameters[script_name]['index'] %>
+<%= "interval = " + parameters[script_name]['interval'] if parameters[script_name]['interval'] %>
+<%= "sourcetype = " + parameters[script_name]['sourcetype'] if parameters[script_name]['sourcetype'] %>
+<%= "source = " + parameters[script_name]['source'] if parameters[script_name]['source'] %>
+<%= "crcSalt = <SOURCE>" if parameters[script_name]['crcSalt'] %>
+
+<% end -%>
+<% end -%>

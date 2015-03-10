@@ -83,7 +83,7 @@ when "linux"
     source 'outputs.conf.erb'
     cookbook 'chef-splunk'
     mode 0644
-    variables :splunk_servers => splunk_servers
+    variables :splunk_servers => splunk_servers, :outputs_conf => node['splunk']['outputs_conf']
     notifies :restart, 'service[splunk]'
   end
   
@@ -165,7 +165,8 @@ if node['splunk']['monitors']
       mode "0600"
     end
     variables ({
-      :splunk_monitors => node['splunk']['monitors']
+      :splunk_monitors => node['splunk']['monitors'],
+      :splunk_scripts => node['splunk']['scripts'] 
     })
     notifies :restart, resources(:service => servicename)
   end

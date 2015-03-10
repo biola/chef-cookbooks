@@ -1,0 +1,13 @@
+{
+  "name": "splunk-server",
+  "chef_environment": "_default",
+  "normal": {
+    "splunk": {
+      "is_server": true,
+      "receiver_port": "9997"
+    }
+  },
+  "automatic": {
+    "ipaddress": "192.168.88.88"
+  }
+}
