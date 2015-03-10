@@ -94,6 +94,10 @@ when "linux"
   end
 
   include_recipe 'chef-splunk::setup_auth'
+    rewind "file[#{node['splunk']['forwarder']['home']}/etc/.setup_admin_password]" do
+      owner 'root'
+      group 'root'
+    end
 when "windows"
   include_recipe "chef-splunk-windows::default"
   include_recipe "chef-splunk-windows::windows_ta"
