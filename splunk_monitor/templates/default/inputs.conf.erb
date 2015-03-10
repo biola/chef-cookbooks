@@ -14,7 +14,7 @@ disabled = false
 <% end -%>
 <% end -%>
 
-<% @splunk_scripts.each_with_index do |parameters, index| -%>
+<% if @splunk_scripts -%><% @splunk_scripts.each_with_index do |parameters, index| -%>
 # Begin new script stanza
 #
 <% parameters.each_key do |script_name| -%>
@@ -28,4 +28,5 @@ disabled = false
 <%= "crcSalt = <SOURCE>" if parameters[script_name]['crcSalt'] %>
 
 <% end -%>
-<% end -%>
+<% end -%><% end -%>
+
