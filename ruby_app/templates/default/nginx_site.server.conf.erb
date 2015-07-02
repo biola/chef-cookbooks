@@ -2,7 +2,9 @@ server {
   listen                      <%= node[:ipaddress] %>:80;
   listen                      <%= node[:ipaddress] %>:443 ssl;
   server_name                 <%= @domain.for_environment(node.chef_environment) %>;
+  <% if @domain.subdomain %>
   server_name                 <%= @domain.for_host(node.fqdn) %>;
+  <% end %>
 
   root                        <%= @static_dir %>/<%= @domain.for_environment(node.chef_environment) %>;
   <% @domain.apps.each do |app| %>
