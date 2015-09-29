@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 #
-# Copyright 2013, Biola University 
+# Copyright 2015, Biola University
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,68 +15,137 @@
 # limitations under the License.
 #
 
+require 'optparse'
 
-def exitBadArguments()
-  puts ''
-  puts 'Usage: purge_older_than HOURS DIRECTORY'
-  puts ''
-  puts 'e.g., ./purge_older_than 8 "/home/Downloads/cats"'
-  puts 'This will elminate all directories/files under cats older than 8 hours'
-  puts '(not including the cats directory itself)'
-  puts ''
-  abort()
+options = {}
+OptionParser.new do |opts|
+  opts.banner = 'Usage: purge_older_than [options]'
+
+  opts.on('-v', '--[no-]verbose', 'Run verbosely') do |o|
+    options[:verbose] = o
+  end
+
+  opts.on(
+    '-H',
+    '--hours HOURS',
+    'File/directories older than this many hours will be deleted'
+  ) do |o|
+    options[:hours] = o
+  end
+
+  opts.on(
+    '-d',
+    '--directory DIRECTORY',
+    'Purge files in and under this directory, not including itself'
+  ) do |o|
+    options[:directory] = o
+  end
+
+  opts.on(
+    '-p',
+    '--pattern PATTERN',
+    'Only delete the file or directory if it matches PATTERN'
+  ) do |o|
+    options[:pattern] = o
+  end
+
+  opts.on(
+    '-S',
+    '--starts-with PATTERN',
+    'Only delete the file or directory if it begins with PATTERN'
+  ) do |o|
+    options[:startswith] = o
+  end
+
+  opts.on(
+    '-E',
+    '--ends-with PATTERN',
+    'Only delete the file or directory if it ends with PATTERN'
+  ) do |o|
+    options[:endswith] = o
+  end
+
+  options[:skipdirs] = false
+  opts.on(
+    '-s',
+    '--skip-dirs',
+    'Skip deleting old sub-directories (only delete files); defaults to false'
+  ) do |o|
+    options[:skipdirs] = o
+  end
+end.parse!
+
+# Legacy options support
+if (!options[:hours] && !options[:directory]) && ARGV.length == 2
+  options[:hours] = ARGV[0]
+  options[:directory] = ARGV[1]
+elsif !options[:hours] || !options[:directory]
+  puts '-H & -d are required; please see --help for options'
+  exit
+elsif !File.directory?(options[:directory])
+  puts 'That does not appear to be a valid directory'
+  fail
+else
+  # Strip trailing slashes
+  options[:directory] = options[:directory].sub(%r{/$}, '')
 end
 
-unless ARGV.length == 2
-  exitBadArguments()
-end
-
-unless File.directory?(ARGV[1])
-  exitBadArguments()
-end
-
-def checkFileOrDirectory(objForChecking, cutoffTime)
+def check_file_or_directory(objForChecking, cutoffTime)
   # First, let's see if this file or directory matches our new scope
   throw :objIsNew if File.ctime(objForChecking) > cutoffTime
   # Since it doesn't; check it is a directory and start the process again
-  if File.directory?(objForChecking)
-    objForCheckingsChildren = Dir.entries(objForChecking) - ['.','..']
-    objForCheckingsChildren.each do |objForCheckingsChild|
-      checkFileOrDirectory(objForChecking + '/' + objForCheckingsChild, cutoffTime)
-    end
+  return unless File.directory?(objForChecking)
+  (Dir.entries(objForChecking) - ['.', '..']).each do |child|
+    check_file_or_directory(
+      File.join(objForChecking, child),
+      cutoffTime
+    )
   end
 end
 
-# Will populate this with directories to toss
-directoriesToDelete = []
+# Will populate this with files/directories to delete
+fso_to_delete = []
 
-# Setup the object defining the oldest allowed file. Each hour has 3600 seconds.
-inputCutoffTime = Time.at(Time.now() - (ARGV[0].to_i * 3600))
-
-# Strip trailing slashes
-baseDirectory = ARGV[1].sub(/\/$/,'')
+# Setup the object defining the oldest allowed file
+input_cutoff = Time.at(Time.now - (options[:hours].to_i * 3_600))
 
 # Strip the current and previous directory from its list of entries
-topLevelObjs = Dir.entries(baseDirectory) - ['.','..']
+top_lvl_objs = Dir.entries(options[:directory]) - ['.', '..']
 
 # Start checking
-topLevelObjs.each do |topLevelDirorFile|
-  catch (:objIsNew) do
-    checkFileOrDirectory(baseDirectory + '/' + topLevelDirorFile, inputCutoffTime)
-    directoriesToDelete << baseDirectory + '/' + topLevelDirorFile
+top_lvl_objs.each do |toplvl_fso|
+  next if
+    (options[:skipdirs] &&
+    File.directory?(File.join(options[:directory], toplvl_fso))
+    ) ||
+    (options[:pattern] &&
+    !/#{options[:pattern]}/.match(toplvl_fso)
+    ) ||
+    (options[:startswith] &&
+    !toplvl_fso.start_with?(options[:startswith])
+    ) ||
+    (options[:endswith] &&
+    !toplvl_fso.end_with?(options[:endswith])
+    )
+  catch :objIsNew do
+    check_file_or_directory(
+      File.join(options[:directory], toplvl_fso),
+      input_cutoff
+    )
+    fso_to_delete << File.join(options[:directory], toplvl_fso)
   end
 end
 
 # Now the at the list has been created, perform the deletions
 require 'syslog'
 require 'fileutils'
-sysLogObj = Syslog.open('purge_older_than')
-unless directoriesToDelete == []
-  directoriesToDelete.each do |terminatedDir|
-    sysLogObj.info("Deleting directory: #{terminatedDir}")
-    FileUtils.rm_rf(terminatedDir)
-  end
+syslog_obj = Syslog.open('purge_older_than')
+if fso_to_delete == []
+  syslog_obj.info('No directories found to delete')
 else
-  sysLogObj.info("No directories found to delete")
+  fso_to_delete.each do |terminated_fso|
+    syslog_obj.info("Deleting: #{terminated_fso}")
+    FileUtils.rm_rf(terminated_fso)
+  end
 end
-sysLogObj.close()
+syslog_obj.close
