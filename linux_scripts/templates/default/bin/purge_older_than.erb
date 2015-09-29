@@ -85,9 +85,6 @@ elsif !options[:hours] || !options[:directory]
 elsif !File.directory?(options[:directory])
   puts 'That does not appear to be a valid directory'
   fail
-else
-  # Strip trailing slashes
-  options[:directory] = options[:directory].sub(%r{/$}, '')
 end
 
 def check_file_or_directory(objForChecking, cutoffTime)
