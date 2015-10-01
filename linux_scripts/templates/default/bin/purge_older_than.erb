@@ -78,13 +78,16 @@ end.parse!
 # Legacy options support
 if (!options[:hours] && !options[:directory]) && ARGV.length == 2
   options[:hours] = ARGV[0]
-  options[:directory] = ARGV[1]
+  options[:directory] = ARGV[1].sub(%r{/$}, '')
 elsif !options[:hours] || !options[:directory]
   puts '-H & -d are required; please see --help for options'
   exit
 elsif !File.directory?(options[:directory])
   puts 'That does not appear to be a valid directory'
   fail
+else
+  # Strip trailing slashes
+  options[:directory] = options[:directory].sub(%r{/$}, '')
 end
 
 def check_file_or_directory(objForChecking, cutoffTime)
